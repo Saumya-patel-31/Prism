@@ -76,6 +76,10 @@ jobs:
           role-session-name: github-actions-prism-demo
           audience: sts.amazonaws.com
           aws-region: us-east-1
+          # The action tags the session with repo/actor/branch by default, which
+          # makes STS require sts:TagSession as well. Skipping tagging removes
+          # that requirement entirely — the trust policy still gates access.
+          role-skip-session-tagging: true
 
       # Hashed asset filenames under _next/static are immutable, so they get a
       # long cache. Everything else must revalidate or users would be pinned to
