@@ -1,0 +1,22 @@
+# Copy to terraform.tfvars and fill in your own values.
+# terraform.tfvars is gitignored; this example file is committed.
+
+# GitHub account that owns the repo — the user/org part of the URL.
+# For github.com/alice/prism this is "alice".
+github_owner = "your-github-username"
+
+# Repository name. For github.com/alice/prism this is "prism".
+github_repo = "prism"
+
+# Only this branch may assume the deploy role. Must match the branch the
+# workflow runs on (.github/workflows/deploy-demo.yml triggers on main).
+github_branch = "main"
+
+# Set to false if this AWS account already has a GitHub OIDC provider.
+# An account may only hold one provider per URL, so a second `apply` that
+# tries to create it again will fail with EntityAlreadyExists.
+create_oidc_provider = true
+
+# Optional overrides.
+# project_name = "prism-demo"
+# aws_region   = "us-east-1"

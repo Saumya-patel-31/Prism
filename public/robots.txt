@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /$
+Disallow: /chat
+Disallow: /documents
+Disallow: /collections
+Disallow: /prompts
+Disallow: /benchmark
+Disallow: /evals
+Disallow: /dashboard
+Disallow: /models
+Disallow: /settings
+Disallow: /api/

@@ -1,0 +1,136 @@
+/* Landing-page styles.
+   Namespaced under .lp- so nothing here can collide with app chrome. */
+
+.lp-display {
+  font-family: var(--font-display), var(--font-geist-sans), system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 0.98;
+}
+
+.lp-eyebrow {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
+}
+
+/* Hairline grid backdrop — an instrument bezel, not a decorative mesh. */
+.lp-grid-backdrop {
+  background-image:
+    linear-gradient(to right, oklch(0.3 0.02 285 / 0.22) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(0.3 0.02 285 / 0.22) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black, transparent 78%);
+}
+
+/* ── Signature: the dispersion instrument ───────────────────────────────
+   One beam enters, five labeled signals leave. Each band is a real stage
+   of the retrieval pipeline, so the drawing carries information.        */
+
+.lp-prism svg {
+  width: 100%;
+  height: auto;
+}
+
+.lp-beam,
+.lp-band {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lp-beam {
+  stroke: oklch(0.95 0.005 285);
+  stroke-width: 2;
+}
+
+.lp-band {
+  stroke-width: 2.5;
+}
+
+.lp-band-label {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 13px;
+  fill: var(--color-muted-foreground);
+}
+
+.lp-prism-body {
+  fill: oklch(0.64 0.19 288 / 0.07);
+  stroke: oklch(0.64 0.19 288 / 0.55);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+/* Draw-on sequence. pathLength="1" normalizes every path so one
+   keyframe works regardless of actual geometry. */
+@keyframes lp-draw {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes lp-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lp-appear {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.lp-beam,
+.lp-band {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: lp-draw 0.9s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+.lp-prism-body {
+  opacity: 0;
+  animation: lp-appear 0.5s ease-out 0.55s forwards;
+}
+
+.lp-band { animation-delay: 0.85s; }
+.lp-band-label {
+  opacity: 0;
+  animation: lp-appear 0.5s ease-out forwards;
+  animation-delay: 1.5s;
+}
+
+/* Stagger each band so the spectrum fans out rather than snapping open. */
+.lp-band-1 { animation-delay: 0.85s; }
+.lp-band-2 { animation-delay: 0.97s; }
+.lp-band-3 { animation-delay: 1.09s; }
+.lp-band-4 { animation-delay: 1.21s; }
+.lp-band-5 { animation-delay: 1.33s; }
+.lp-label-1 { animation-delay: 1.45s; }
+.lp-label-2 { animation-delay: 1.57s; }
+.lp-label-3 { animation-delay: 1.69s; }
+.lp-label-4 { animation-delay: 1.81s; }
+.lp-label-5 { animation-delay: 1.93s; }
+
+/* Hero text enters just ahead of the instrument. */
+.lp-enter {
+  opacity: 0;
+  animation: lp-fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.lp-enter-1 { animation-delay: 0.05s; }
+.lp-enter-2 { animation-delay: 0.15s; }
+.lp-enter-3 { animation-delay: 0.25s; }
+.lp-enter-4 { animation-delay: 0.35s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-beam,
+  .lp-band,
+  .lp-band-label,
+  .lp-prism-body,
+  .lp-enter {
+    animation: none !important;
+    opacity: 1 !important;
+    stroke-dashoffset: 0 !important;
+    transform: none !important;
+  }
+}
