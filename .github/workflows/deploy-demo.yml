@@ -57,8 +57,6 @@ jobs:
       # the decoded claims are echoed, never the token itself.
       - name: Debug OIDC claims
         run: |
-          echo "role arn length: ${#ROLE_ARN} (0 means the secret is unset)"
-          echo "role arn tail:   ...${ROLE_ARN: -28}"
           TOKEN=$(curl -sS \
             -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
             "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" \
@@ -67,14 +65,17 @@ jobs:
           while [ $(( ${#PAYLOAD} % 4 )) -ne 0 ]; do PAYLOAD="${PAYLOAD}="; done
           echo "$PAYLOAD" | base64 -d 2>/dev/null \
             | jq '{sub, aud, iss, repository, ref, workflow_ref}'
-        env:
-          ROLE_ARN: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
 
+      # The role ARN is an identifier, not a credential — the trust policy is
+      # what enforces who may assume it. Inlining removes the repository secret
+      # as a source of error.
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+          role-to-assume: arn:aws:iam::288507842287:role/prism-demo-github-deploy
+          role-session-name: github-actions-prism-demo
+          audience: sts.amazonaws.com
+          aws-region: us-east-1
 
       # Hashed asset filenames under _next/static are immutable, so they get a
       # long cache. Everything else must revalidate or users would be pinned to
