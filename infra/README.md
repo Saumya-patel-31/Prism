@@ -95,11 +95,47 @@ under **Settings → Secrets and variables → Actions**:
 
 | Name | Kind | Value |
 |---|---|---|
-| `AWS_DEPLOY_ROLE_ARN` | Secret | `deploy_role_arn` |
 | `AWS_S3_BUCKET` | Secret | `bucket_name` |
 | `AWS_CLOUDFRONT_ID` | Secret | `distribution_id` |
 | `SITE_URL` | Variable | `site_url` |
-| `AWS_REGION` | Variable | matches `aws_region` (default `us-east-1`) |
+
+The deploy role's ARN is written directly into the workflow rather than stored
+as a secret. An ARN is an identifier, not a credential — the trust policy is
+what decides who may assume it — and keeping it visible makes failures far
+easier to debug.
+
+### Gotcha: immutable subject claims
+
+GitHub issues OIDC tokens whose `sub` embeds numeric IDs:
+
+```
+repo:OWNER@205691003/REPO@1313265081:ref:refs/heads/main
+```
+
+Most documentation still shows the older `repo:OWNER/REPO:ref:...` form. A trust
+policy written against that format never matches, and AWS reports a generic
+"Not authorized to perform sts:AssumeRoleWithWebIdentity" that names the wrong
+action — so it looks like a permissions problem rather than a string mismatch.
+Wildcarding the names does not help either, since the IDs sit inside the segment
+you would otherwise treat as fixed.
+
+Look up the two IDs with:
+
+```bash
+curl -s https://api.github.com/users/<owner> | jq .id
+curl -s https://api.github.com/repos/<owner>/<repo> | jq .id
+```
+
+and set `github_owner_id` / `github_repo_id` in `terraform.tfvars`. Pinning IDs
+is also stricter than names: they survive a rename, and anyone who later
+registers your old username inherits nothing.
+
+To see the claims a run actually presents, re-run the workflow with debug
+logging enabled and read the `sub` in the credentials step.
+
+The role additionally allows `sts:TagSession`, because the AWS credentials
+action tags sessions by default; without it, STS refuses the call and blames
+`AssumeRoleWithWebIdentity`.
 
 Push to `main` and the workflow publishes. The role's trust policy is pinned to
 that one repository and branch, so forks and pull-request builds cannot assume

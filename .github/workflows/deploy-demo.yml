@@ -52,23 +52,10 @@ jobs:
         env:
           NEXT_PUBLIC_SITE_URL: ${{ vars.SITE_URL }}
 
-      # TEMPORARY — remove once OIDC is confirmed working.
-      # Prints the claims AWS compares against the role's trust policy. Only
-      # the decoded claims are echoed, never the token itself.
-      - name: Debug OIDC claims
-        run: |
-          TOKEN=$(curl -sS \
-            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" \
-            | jq -r '.value')
-          PAYLOAD=$(echo "$TOKEN" | cut -d. -f2 | tr '_-' '/+')
-          while [ $(( ${#PAYLOAD} % 4 )) -ne 0 ]; do PAYLOAD="${PAYLOAD}="; done
-          echo "$PAYLOAD" | base64 -d 2>/dev/null \
-            | jq '{sub, aud, iss, repository, ref, workflow_ref}'
-
       # The role ARN is an identifier, not a credential — the trust policy is
-      # what enforces who may assume it. Inlining removes the repository secret
-      # as a source of error.
+      # what enforces who may assume it, so it lives in the file rather than a
+      # secret. To inspect the OIDC claims AWS matches against that policy,
+      # re-run this workflow with debug logging enabled.
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:

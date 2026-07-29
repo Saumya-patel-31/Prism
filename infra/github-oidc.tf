@@ -33,8 +33,15 @@ locals {
 
 data "aws_iam_policy_document" "deploy_assume_role" {
   statement {
-    effect  = "Allow"
-    actions = ["sts:AssumeRoleWithWebIdentity"]
+    effect = "Allow"
+
+    # sts:TagSession is required because configure-aws-credentials attaches
+    # session tags by default. Without it STS refuses the call and reports the
+    # failure against AssumeRoleWithWebIdentity, which is thoroughly misleading.
+    actions = [
+      "sts:AssumeRoleWithWebIdentity",
+      "sts:TagSession",
+    ]
 
     principals {
       type        = "Federated"
@@ -48,10 +55,19 @@ data "aws_iam_policy_document" "deploy_assume_role" {
     }
 
     # Scoped to a single branch of a single repo.
+    #
+    # GitHub issues *immutable* subject claims: the numeric owner and repo IDs
+    # are embedded after each name, e.g.
+    #   repo:owner@205691003/repo@1313265081:ref:refs/heads/main
+    # Matching on names alone silently never matches. Pinning the IDs is also
+    # stronger — the claim survives a rename, and nobody who later registers
+    # your old username inherits access.
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_owner}/${var.github_repo}:ref:refs/heads/${var.github_branch}"]
+      values = [
+        "repo:${var.github_owner}@${var.github_owner_id}/${var.github_repo}@${var.github_repo_id}:ref:refs/heads/${var.github_branch}"
+      ]
     }
   }
 }
