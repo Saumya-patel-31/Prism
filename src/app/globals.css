@@ -196,6 +196,27 @@
   -webkit-mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
 }
 
+/* Tell the browser this is a dark UI so it renders native controls — select
+   popups, scrollbars, date pickers, autofill — with dark chrome instead of
+   the light default. */
+:root {
+  color-scheme: dark;
+}
+
+/* Belt and braces: option popups are drawn by the OS and don't always honour
+   color-scheme. Without explicit colours the list paints white-on-white. */
+select option,
+select optgroup {
+  background-color: oklch(0.17 0.014 285);
+  color: oklch(0.95 0.005 285);
+}
+
+select option:checked,
+select option:hover {
+  background-color: oklch(0.24 0.03 285);
+  color: oklch(0.98 0 0);
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
